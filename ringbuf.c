@@ -1,7 +1,5 @@
 /**
- * @brief pre-allocated ring list
- * @note it recommend that "key" is a printable string though it has keylen.
- *       it's helpful for a human.
+ * @brief pre-allocated ring buffer
  */
 #include <sys/types.h>
 #include <sys/time.h>
@@ -51,11 +49,11 @@ ringbuf_next_index(struct ringbuf_entry *entry, int idx)
 
 /**
  * @brief output the amount of data and pass to the callback.
- * @param n_data the number data to output.
+ * @param max_data the number of data to get.
  * @param cb callback function to output the data.
  * @param ctx context parameter for the callback.
- * @return size of total data.
- * @attention "cb" must return the length of the data chunk.
+ * @return total bytes of provided data.
+ * @note "cb" must return the length of the data chunk.
  */
 int
 ringbuf_get_item(struct ringbuf_holder *holder, char *key,
@@ -126,8 +124,8 @@ ringbuf_get_item(struct ringbuf_holder *holder, char *key,
 /**
  * @brief add an item into the ring buffer indicated by the key.
  * @param data container of the data.
- * @attention the size of the "data" must be identical to data_size that
- *            is passed to ringbuf_ini()..
+ * @note the size of the "data" must be identical to data_size that
+ *       is passed to ringbuf_ini()..
  */
 int
 ringbuf_add_item(struct ringbuf_holder *holder, char *key, void *data)
@@ -229,8 +227,8 @@ ringbuf_destroy(struct ringbuf_holder *holder)
  * @brief add an item into the ring buffer indicated by the key.
  *        if key doesn't exist, it will create the entry for the key.
  * @param data container of the data.
- * @attention the size of the "data" must be identical to data_size that
- *            is passed to ringbuf_ini()..
+ * @note the size of the "data" must be identical to data_size that
+ *       is passed to ringbuf_init()..
  */
 int
 ringbuf_add(struct ringbuf_holder *holder,

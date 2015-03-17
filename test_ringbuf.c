@@ -14,6 +14,7 @@
 
 char *prog_name = NULL;
 
+/* ring buffer holder */
 struct ringbuf_holder *holder;
 
 struct data {
@@ -62,9 +63,11 @@ sig_alrm(int signo)
 	data.seq = seq++;
 	data.num = random();
 
+	/* add an item into the entry "key001" */
 	ringbuf_add(holder, key001, n_items, data_size, &data);
 
 	data.num = data.num + 1;
+	/* add an item into the entry "key002" */
 	ringbuf_add(holder, key002, n_items, data_size, &data);
 }
 
@@ -132,7 +135,6 @@ test_ringbuf(int n_count, int n_read)
 
 	while (n_count--) {
 		gettimeofday(&tv_start, NULL);
-//printf("tv: %ld.%d\n", tv.tv_sec, tv.tv_usec);
 		error = select(1, NULL, NULL, NULL, &tv);
 		if (error == -1) {
 			switch (errno) {
@@ -144,7 +146,6 @@ test_ringbuf(int n_count, int n_read)
 					tv.tv_sec = 0;
 					tv.tv_usec = 0;
 				}
-//printf("rest: %ld.%d\n", tv.tv_sec, tv.tv_usec);
 				continue;
 			default:
 				err(1, "ERROR: %s: select()", __FUNCTION__);
@@ -152,6 +153,11 @@ test_ringbuf(int n_count, int n_read)
 		}
 		ctx.ptr = ctx.buf;
 		ctx.num_data = 0;
+		/*
+		 * get items (maximum n_read) in the "key001" entry.
+		 * the callback is "output_data".
+		 * ctx is the parameter to be passed to the callback.
+		 */
 		ringbuf_get_item(holder, key001, n_read, output_data, &ctx);
 		print_data(&ctx);
 		set_output_interval(&tv);
@@ -207,12 +213,19 @@ main(int argc, char *argv[])
 	printf("interval to get      = %d\n", interval_get);
 	printf("max # of data to get = %d\n", n_read);
 
+	/* initialize the buffer */
 	holder = ringbuf_init(f_debug);
+
 	if (f_prepare) {
+		/* add entries */
 		ringbuf_add_entry(holder, key001, n_items, data_size);
 		ringbuf_add_entry(holder, key002, n_items, data_size);
 	}
+
+	/* main routine */
 	test_ringbuf(n_count, n_read);
+
+	/* destroy the buffer */
 	ringbuf_destroy(holder);
 
 	return 0;
