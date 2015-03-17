@@ -13,12 +13,12 @@ struct ringbuf_item {
  * @brief holder of the ring buffer denoted ringbuf_item.
  */
 struct ringbuf_entry {
-	int lock_entry;	/* TODO: lock for the single buffer */
+	int lock_entry;	/* TODO: lock for the single entry */
 	struct ringbuf_item *item;
 	int index;	/* current index */
 	int filled;	/* whether it's been filled once. */
 	char *key;	/* key: a printable string */
-	int n_items;	/* maximum number of the items in the buffer */
+	int n_items;	/* maximum number of the items in the entry */
 	int data_size;	/* data size */
 	LIST_ENTRY(ringbuf_entry) link;
 };
