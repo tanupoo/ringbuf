@@ -22,14 +22,6 @@ struct data {
 	long num;
 };
 
-struct data_ctx {
-	char *buf;
-	char *ptr;
-	int buflen;
-	int data_size;
-	int num_data;
-};
-
 useconds_t interval_add = 100000;	/* 100 (ms) */
 useconds_t interval_get = 1000000;	/* 1000 (ms) */
 int n_items = 5;
@@ -80,7 +72,7 @@ set_output_interval(struct timeval *tv)
 }
 
 int
-print_data(struct data_ctx *c)
+print_data(struct ringbuf_data_ctx *c)
 {
 	struct data *d;
 	char *p;
@@ -97,26 +89,10 @@ print_data(struct data_ctx *c)
 }
 
 int
-output_data(void *data, void *ctx)
-{
-	struct data *d = data;
-	struct data_ctx *c = ctx;
-	int data_size = sizeof(*d);
-
-	if (c->ptr - c->buf > c->buflen)
-		warnx("WARN: c.ptr - c.buf > c.buflen");
-	memcpy(c->ptr, data, data_size);
-	c->ptr += data_size;
-	c->num_data++;
-
-	return data_size;
-}
-
-int
 test_ringbuf(int n_count, int n_read)
 {
 	struct timeval tv, tv_start, tv_end, tv_diff;
-	struct data_ctx ctx;
+	struct ringbuf_data_ctx ctx;
 	int error;
 
 	srandom(time(NULL));
@@ -158,7 +134,8 @@ test_ringbuf(int n_count, int n_read)
 		 * the callback is "output_data".
 		 * ctx is the parameter to be passed to the callback.
 		 */
-		ringbuf_get_item(holder, key001, n_read, output_data, &ctx);
+		ringbuf_get_item(holder, key001, n_read,
+		    ringbuf_set_data_ctx, &ctx);
 		print_data(&ctx);
 		set_output_interval(&tv);
 	}
