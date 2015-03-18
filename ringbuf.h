@@ -32,9 +32,21 @@ struct ringbuf_holder {
 	int debug;
 };
 
+/**
+ * @brief container to provide items for the callback of ringbuf_get_item().
+ */
+struct ringbuf_data_ctx {
+	char *buf;
+	char *ptr;
+	int buflen;
+	int data_size;
+	int num_data;
+};
+
+struct ringbuf_entry *ringbuf_find_entry(struct ringbuf_holder *, char *);
+int ringbuf_set_data_ctx(void *, void *);
 int ringbuf_get_item(struct ringbuf_holder *, char *,
     int, int (*)(void *, void *), void *);
-struct ringbuf_entry *ringbuf_find_entry(struct ringbuf_holder *, char *);
 int ringbuf_add_item(struct ringbuf_holder *, char *, void *);
 void ringbuf_delete_entry(struct ringbuf_entry *);
 struct ringbuf_entry *ringbuf_add_entry(struct ringbuf_holder *,

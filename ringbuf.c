@@ -47,6 +47,22 @@ ringbuf_next_index(struct ringbuf_entry *entry, int idx)
 	return -1;	/* no data in the list */
 }
 
+int
+ringbuf_set_data_ctx(void *data, void *ctx)
+{
+	struct ringbuf_data_ctx *d = data;
+	struct ringbuf_data_ctx *c = ctx;
+	int data_size = sizeof(*d);
+
+	if (c->ptr - c->buf > c->buflen)
+		warnx("WARN: c.ptr - c.buf > c.buflen");
+	memcpy(c->ptr, data, data_size);
+	c->ptr += data_size;
+	c->num_data++;
+
+	return data_size;
+}
+
 /**
  * @brief output the amount of data and pass to the callback.
  * @param max_data the number of data to get.
