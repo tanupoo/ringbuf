@@ -26,7 +26,24 @@ ringbuf_find_entry(struct ringbuf_holder *holder, char *key)
 	return NULL;
 }
 
+int
+ringbuf_set_data_ctx(void *data, void *ctx)
+{
+	struct ringbuf_data_ctx *d = data;
+	struct ringbuf_data_ctx *c = ctx;
+	int data_size = sizeof(*d);
+
+	if (c->ptr - c->buf > c->buflen)
+		warnx("WARN: c.ptr - c.buf > c.buflen");
+	memcpy(c->ptr, data, data_size);
+	c->ptr += data_size;
+	c->num_data++;
+
+	return data_size;
+}
+
 /**
+ * provide the index to be read next to the current value of the index.
  * @param idx current index in the list.
  * @return index in the list to be accessed next of the param "idx".
  */
@@ -45,22 +62,6 @@ ringbuf_next_index(struct ringbuf_entry *entry, int idx)
 	}
 
 	return -1;	/* no data in the list */
-}
-
-int
-ringbuf_set_data_ctx(void *data, void *ctx)
-{
-	struct ringbuf_data_ctx *d = data;
-	struct ringbuf_data_ctx *c = ctx;
-	int data_size = sizeof(*d);
-
-	if (c->ptr - c->buf > c->buflen)
-		warnx("WARN: c.ptr - c.buf > c.buflen");
-	memcpy(c->ptr, data, data_size);
-	c->ptr += data_size;
-	c->num_data++;
-
-	return data_size;
 }
 
 /**
@@ -120,7 +121,8 @@ ringbuf_get_item(struct ringbuf_holder *holder, char *key,
 		 */
 		if (cb) {
 			t_size += cb(entry->item[idx].data, ctx);
-			entry->item[idx].valued = 0;
+			if (!holder->preserve)
+				entry->item[idx].valued = 0;
 		}
 		/* get next index */
 		if ((idx = ringbuf_next_index(entry, idx)) == -1)
@@ -159,24 +161,24 @@ ringbuf_add_item(struct ringbuf_holder *holder, char *key, void *data)
 	entry->item[entry->index].valued = 1;
 	memcpy(entry->item[entry->index].data, data, entry->data_size);
 
-	if (entry->index + 1 >= entry->n_items) {
+	if (holder->debug > 1) {
+		printf("DEBUG: %s: an item has been added index=%d key=%s\n",
+		    __FUNCTION__, entry->index, key);
+	}
+
+	entry->index++;
+
+	if (entry->index >= entry->n_items) {
 		entry->index = 0;
 		entry->filled++;
 		if (holder->debug > 1) {
 			printf("DEBUG: %s: ringbuf has been filled %d times "
 			    "key=%s\n", __FUNCTION__, entry->filled, key);
 		}
-		return -1;
-	}
-
-	entry->index++;
-
-	if (holder->debug > 1) {
-		printf("DEBUG: %s: an item has been added index=%d key=%s\n",
-		    __FUNCTION__, entry->index, key);
 	}
 
 	return 0;
+
 }
 
 void
@@ -268,7 +270,7 @@ ringbuf_add(struct ringbuf_holder *holder,
  * @brief initialize the holder of the list of the ring buffer.
  */
 struct ringbuf_holder *
-ringbuf_init(int f_debug)
+ringbuf_init(int f_preserve, int f_debug)
 {
 	struct ringbuf_holder *new;
 
@@ -277,6 +279,7 @@ ringbuf_init(int f_debug)
 
 	LIST_INIT(&new->entry);
 
+	new->preserve = f_preserve;
 	new->debug = f_debug;
 
 	return new;

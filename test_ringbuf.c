@@ -191,7 +191,7 @@ main(int argc, char *argv[])
 	printf("max # of data to get = %d\n", n_read);
 
 	/* initialize the buffer */
-	holder = ringbuf_init(f_debug);
+	holder = ringbuf_init(0, f_debug);
 
 	if (f_prepare) {
 		/* add entries */

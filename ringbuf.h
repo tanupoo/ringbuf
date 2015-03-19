@@ -29,6 +29,7 @@ struct ringbuf_entry {
 struct ringbuf_holder {
 	int lock_holder;	/* TODO: lock for the whole buffers */
 	LIST_HEAD(ringbuf_head, ringbuf_entry) entry;
+	int preserve;	/* don't clear the value flag in the item if set */
 	int debug;
 };
 
@@ -53,4 +54,4 @@ struct ringbuf_entry *ringbuf_add_entry(struct ringbuf_holder *,
     char *, int, int);
 void ringbuf_destroy(struct ringbuf_holder *);
 int ringbuf_add(struct ringbuf_holder *, char *, int, int, void *);
-struct ringbuf_holder *ringbuf_init(int);
+struct ringbuf_holder *ringbuf_init(int, int);
