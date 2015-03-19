@@ -54,21 +54,23 @@ sig_alrm(int signo)
 
 	timer += interval_add;
 
-	data.seq = seq++;
+	data.seq = seq;
 	data.num = random();
-	memset(data.buf, 0, sizeof(data.buf));
 	strcpy(data.buf, "0123");
 
 	/* add an item into the entry "key001" */
 	ringbuf_add(holder, key001, n_items, data_size, &data);
 
 	data.num = data.num + 1;
+	strcpy(data.buf, "4567");
 	/* add an item into the entry "key002" */
 	ringbuf_add(holder, key002, n_items, data_size, &data);
+
+	seq++;
 }
 
 void
-set_output_interval(struct timeval *tv)
+set_retrieve_interval(struct timeval *tv)
 {
 	memset(tv, 0, sizeof(*tv));
 	tv->tv_sec = interval_get / SIP_U;
@@ -85,7 +87,7 @@ print_data(struct ringbuf_data_ctx *c)
 	p = c->buf + (c->num_data - 1) * c->data_size;
 	for (i = 0; i < c->num_data; i++) {
 		d = (struct data *)p;
-		printf("seq=%06d num=%ld\n", d->seq, d->num);
+		printf("seq=%06d num=%ld buf=[%s]\n", d->seq, d->num, d->buf);
 		p -= c->data_size;
 	}
 
@@ -127,7 +129,7 @@ test_ringbuf(int n_count, int n_read)
 		err(1, "calloc(buf)");
 	ctx.data_size = sizeof(struct data);
 
-	set_output_interval(&tv);
+	set_retrieve_interval(&tv);
 
 	while (n_count--) {
 		gettimeofday(&tv_start, NULL);
@@ -151,13 +153,17 @@ test_ringbuf(int n_count, int n_read)
 		ctx.num_data = 0;
 		/*
 		 * get items (maximum n_read) in the "key001" entry.
-		 * the callback is "output_data".
+		 * the callback is "set_data_ctx".
 		 * ctx is the parameter to be passed to the callback.
 		 */
-		ringbuf_get_item(holder, key001, n_read,
-		    set_data_ctx, &ctx);
+#if 0
+		ringbuf_get_item(holder, key001, n_read, set_data_ctx, &ctx);
 		print_data(&ctx);
-		set_output_interval(&tv);
+#else
+		ringbuf_get_item(holder, key002, n_read, set_data_ctx, &ctx);
+		print_data(&ctx);
+#endif
+		set_retrieve_interval(&tv);
 	}
 
 	return 0;
