@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <err.h>
 #include <time.h>	/* time() */
 #include <errno.h>
