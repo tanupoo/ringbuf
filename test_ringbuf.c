@@ -20,6 +20,7 @@ struct ringbuf_holder *holder;
 struct data {
 	int seq;
 	long num;
+	char buf[5];
 };
 
 useconds_t interval_add = 100000;	/* 100 (ms) */
@@ -54,6 +55,8 @@ sig_alrm(int signo)
 
 	data.seq = seq++;
 	data.num = random();
+	memset(data.buf, 0, sizeof(data.buf));
+	strcpy(data.buf, "0123");
 
 	/* add an item into the entry "key001" */
 	ringbuf_add(holder, key001, n_items, data_size, &data);
@@ -86,6 +89,22 @@ print_data(struct ringbuf_data_ctx *c)
 	}
 
 	return 0;
+}
+
+int
+set_data_ctx(void *data, void *ctx)
+{
+	struct data *d = data;
+	struct ringbuf_data_ctx *c = ctx;
+	int data_size = sizeof(*d);
+
+	if (c->ptr - c->buf > c->buflen)
+		warnx("WARN: c.ptr - c.buf > c.buflen");
+	memcpy(c->ptr, data, data_size);
+	c->ptr += data_size;
+	c->num_data++;
+
+	return data_size;
 }
 
 int
@@ -135,7 +154,7 @@ test_ringbuf(int n_count, int n_read)
 		 * ctx is the parameter to be passed to the callback.
 		 */
 		ringbuf_get_item(holder, key001, n_read,
-		    ringbuf_set_data_ctx, &ctx);
+		    set_data_ctx, &ctx);
 		print_data(&ctx);
 		set_output_interval(&tv);
 	}

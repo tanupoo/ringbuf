@@ -45,7 +45,6 @@ struct ringbuf_data_ctx {
 };
 
 struct ringbuf_entry *ringbuf_find_entry(struct ringbuf_holder *, char *);
-int ringbuf_set_data_ctx(void *, void *);
 int ringbuf_get_item(struct ringbuf_holder *, char *,
     int, int (*)(void *, void *), void *);
 int ringbuf_add_item(struct ringbuf_holder *, char *, void *);

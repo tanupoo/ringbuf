@@ -26,22 +26,6 @@ ringbuf_find_entry(struct ringbuf_holder *holder, char *key)
 	return NULL;
 }
 
-int
-ringbuf_set_data_ctx(void *data, void *ctx)
-{
-	struct ringbuf_data_ctx *d = data;
-	struct ringbuf_data_ctx *c = ctx;
-	int data_size = sizeof(*d);
-
-	if (c->ptr - c->buf > c->buflen)
-		warnx("WARN: c.ptr - c.buf > c.buflen");
-	memcpy(c->ptr, data, data_size);
-	c->ptr += data_size;
-	c->num_data++;
-
-	return data_size;
-}
-
 /**
  * provide the index to be read next to the current value of the index.
  * @param idx current index in the list.
