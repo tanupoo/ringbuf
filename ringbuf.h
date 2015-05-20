@@ -30,6 +30,8 @@ struct ringbuf_holder {
 	int lock_holder;	/* TODO: lock for the whole buffers */
 	LIST_HEAD(ringbuf_head, ringbuf_entry) entry;
 	int preserve;	/* don't clear the value flag in the item if set */
+#define RINGBUF_PRESERVE	1
+#define RINGBUF_NO_PRESERVE	0
 	int debug;
 };
 
