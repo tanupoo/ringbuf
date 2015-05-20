@@ -229,6 +229,7 @@ ringbuf_destroy(struct ringbuf_holder *holder)
  * @brief add an item into the ring buffer indicated by the key.
  *        if key doesn't exist, it will create the entry for the key.
  * @param data container of the data.
+ * @n_items maximum number of items.
  * @note the size of the "data" must be identical to data_size that
  *       is passed to ringbuf_init()..
  */
@@ -252,6 +253,7 @@ ringbuf_add(struct ringbuf_holder *holder,
 
 /**
  * @brief initialize the holder of the list of the ring buffer.
+ * @param f_preserve flag of an item preservation.
  */
 struct ringbuf_holder *
 ringbuf_init(int f_preserve, int f_debug)
